@@ -34,5 +34,4 @@ jobs:
         export KUBECONFIG=$PWD/kubeconfig
 
     - name: Deploy to Kubernetes
-      run: |
-        kubectl apply -f k8s/
+      run: kubectl apply -f k8s/

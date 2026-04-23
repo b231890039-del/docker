@@ -1,0 +1,38 @@
+
+name: Full CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Login to DockerHub
+      run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+    - name: Build Backend
+      run: docker build -t ${{ secrets.DOCKER_USERNAME }}/backend:latest ./backend
+
+    - name: Push Backend
+      run: docker push ${{ secrets.DOCKER_USERNAME }}/backend:latest
+
+    - name: Build Frontend
+      run: docker build -t ${{ secrets.DOCKER_USERNAME }}/frontend:latest ./frontend
+
+    - name: Push Frontend
+      run: docker push ${{ secrets.DOCKER_USERNAME }}/frontend:latest
+
+    - name: Setup Kubeconfig
+      run: |
+        echo "${{ secrets.KUBECONFIG }}" > kubeconfig
+        export KUBECONFIG=$PWD/kubeconfig
+
+    - name: Deploy to Kubernetes
+      run: |
+        kubectl apply -f k8s/
